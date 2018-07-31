@@ -38,6 +38,7 @@ export const validationSettings = {
 ```
 
 **app/validators/formRules.jsx**
+
 Then here you can create your own set of rules by field / state
 ```javascript
 import { validationSettings } from './validationSettings';
@@ -51,6 +52,7 @@ export const formRules = {
 ```
 
 **app/validators/formValidator.jsx**
+
 This validator use the set of rules **formRules** created before and returns this object
 ```javascript
 {
