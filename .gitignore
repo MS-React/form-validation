@@ -62,6 +62,10 @@ typings/
 .idea
 buildlog/
 
-#package-lock
+# package-lock
 package-lock.json
 
+# yarn-lock
+yarn.lock
+
+# 
