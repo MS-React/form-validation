@@ -65,17 +65,80 @@ npm run sass-lint
 
 # Form Validation
 
-### Configuration files
+### The Plan
+My design goals are as follows:
 
-* app/validators/validationSettings.jsx
-* app/validators/formRules.jsx
-* app/validators/formValidator.jsx
+- Portability/Reusability. I want to be able to use the same validation code several places in my project, and in future projects.
+- Flexibility. It needs to be able to handle most common validation scenarios, like checking if a field is empty, that it’s numeric, etc.
+- Multiple validations per field. This is a very common requirement.
 
-### How to use
+To achieve these, I decided to create a **FormValidator** object that might look something like this:
 
-**app/validators/validationSettings.jsx**
+```javascript
+class FormValidator {
+  constructor(validations) {
+    // validations is an array of form-specific validation rules
+    this.validations = validations;
+  }
+  validate(state) {
+    // iterate through the validation rules and construct
+    // a validation object, and return it
+    return validation;
+  }
+}
+```
 
-Have each rule from your field / state and uses the library [Validator](https://github.com/chriso/validator.js) from npm but you can create your own functions
+File: **app/validators/formValidator.jsx**
+
+To use this object, my form just creates an **instance of the FormValidator**, passing into an array of validation rules. (We’ll discuss validation rules later)
+
+**const validator = new FormValidator([rule1, rule2, rule3]);**
+
+Then when the form wants to check if state is valid, it calls validate(state).
+
+**const validation = validator.validate(this.state);**
+
+The form can then use the validation object to determine if the form can be submitted and what to display. We’ll get to the details of the validation object in a minute or two.
+
+
+### Validation Rules
+
+Conceptually, a validation rule needs the following things:
+
+- What field is being validated.
+- What function should be invoked to check if it’s valid
+- What that function should return when the field is valid (usually true or false)
+- What message should be displayed if the field isn’t valid.
+
+Ok, so then why not write a rules for a name field like this:
+```javascript
+validator = new FormValidator([
+  ...
+  {
+    field: 'age',
+    method: validator.isInt,
+    args: [{min: 21, max: 65}],  // an array of additional arguments
+    validWhen: true,
+    message: 'Your age must be an integer between 21 and 65'
+  }
+])
+```
+
+File: **app/validators/formRules.jsx**
+
+```javascript
+import { validationSettings } from './validationSettings';
+
+export const formRules = {
+  login: [
+    ...validationSettings.username.rules,
+    ...validationSettings.password.rules
+  ]
+}
+```
+
+File: **app/validators/validationSettings.jsx
+
 ```javascript
 export const validationSettings = {
   name: {
@@ -102,21 +165,10 @@ export const validationSettings = {
 }
 ```
 
-**app/validators/formRules.jsx**
+### Validation Object
+Before we go into detail about how the FormValidator validate method works, we need to think about what the form needs to get back. How do we plan to use the information we get back?
 
-Then here you can create your own set of rules by field / state
-```javascript
-import { validationSettings } from './validationSettings';
-
-export const formRules = {
-  login: [
-    ...validationSettings.username.rules,
-    ...validationSettings.password.rules
-  ]
-}
-```
-
-**app/validators/formValidator.jsx**
+Well the most obvious thing is that we will want to be able to quickly check if the form is valid so that we know if we should submit it or not. So let’s start by requiring that our validation object has an isValid property.
 
 This validator use the set of rules **formRules** created before and returns this object
 ```javascript
@@ -129,7 +181,7 @@ This validator use the set of rules **formRules** created before and returns thi
 }
 ```
 
-**validate**
+### Validate the form
 ```javascript
 class LoginForm extends React.Component {
   static propTypes = {
