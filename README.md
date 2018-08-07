@@ -137,7 +137,7 @@ export const formRules = {
 }
 ```
 
-File: **app/validators/validationSettings.jsx
+File: **app/validators/validationSettings.jsx**
 
 ```javascript
 export const validationSettings = {
